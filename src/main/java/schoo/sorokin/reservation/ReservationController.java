@@ -1,6 +1,6 @@
 package schoo.sorokin.reservation;
 
-import org.slf4j.ILoggerFactory;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -36,7 +36,7 @@ public class ReservationController {
 
     @PostMapping("")
     public Reservation createReservation(
-            @RequestBody Reservation reservationToCreate
+            @RequestBody @Valid Reservation reservationToCreate
     ) {
         log.info("createReservation are called");
         return reservationService.createReservation(reservationToCreate);
@@ -45,7 +45,7 @@ public class ReservationController {
     @PutMapping("/{id}")
     public ResponseEntity<Reservation> updateReservation(
             @PathVariable("id") Long id,
-            @RequestBody Reservation reservationToUpdate
+            @RequestBody @Valid Reservation reservationToUpdate
     ) {
         log.info("updateReservation are called id={}, reservationToUpdate={}", id, reservationToUpdate);
         var updated = reservationService.updateReservation(id, reservationToUpdate);

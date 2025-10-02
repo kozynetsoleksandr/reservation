@@ -19,14 +19,14 @@ public class ReservationEntity {
     @Column(name = "room_id")
     private Long roomId;
 
-    @Column(name = "start_date")
+    @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
 
-    @Column(name = "end_date")
+    @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status")
+    @Column(name = "status",  nullable = false)
     private ReservationStatus status;
 
     public ReservationEntity() {
