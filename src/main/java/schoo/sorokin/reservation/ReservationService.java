@@ -1,6 +1,9 @@
 package schoo.sorokin.reservation;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 
@@ -10,6 +13,8 @@ import java.util.*;
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
+
+    private static final Logger log = LoggerFactory.getLogger(ReservationService.class);
 
     public ReservationService(ReservationRepository reservationRepository) {
         this.reservationRepository = reservationRepository;
@@ -74,6 +79,17 @@ public class ReservationService {
         }
         reservationRepository.deleteById(id);
     }
+
+    @Transactional
+    public void cancelReservation(Long id) {
+        if (!reservationRepository.existsById(id)) {
+            throw new EntityNotFoundException("Not found reservation by id = " + id);
+        }
+
+        reservationRepository.setStatus(id, ReservationStatus.CANCELLED);
+        log.debug("reservation cancelled by reservation with id = " + id);
+    }
+
 
     public Reservation approveReservation(Long id) {
         var reservationEntity = reservationRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Reservation not found: " + id));
