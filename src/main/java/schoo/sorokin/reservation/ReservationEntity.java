@@ -16,7 +16,7 @@ public class ReservationEntity {
     @Column(name = "user_id")
     private Long userId;
 
-    @Column(name = "room_id")
+    @Column(name = "room_id", nullable = false)
     private Long roomId;
 
     @Column(name = "start_date", nullable = false)
