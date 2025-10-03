@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 
+import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -94,7 +95,11 @@ public class ReservationService {
         if (reservationEntity.getStatus() != ReservationStatus.PENDING) {
             throw new IllegalArgumentException("cannot approve reservation should be PENDING");
         }
-        if (isReservationConflict(reservationEntity)) {
+        if (isReservationConflict(
+                reservationEntity.getRoomId(),
+                reservationEntity.getStartDate(),
+                reservationEntity.getEndDate()
+        )) {
             throw new IllegalArgumentException("cannot approve reservation conflict");
         }
 
@@ -103,27 +108,28 @@ public class ReservationService {
         return toDomainReservation(reservationEntity);
     }
 
-    private boolean isReservationConflict(ReservationEntity reservation) {
-        var allReservations = reservationRepository.findAll();
-        for (ReservationEntity existingReservation : allReservations) {
-            if (reservation.getId().equals(existingReservation.getId())) {
-                continue;
-            }
-            if (!reservation.getRoomId().equals(existingReservation.getRoomId())) {
-                continue;
-            }
-            if (!existingReservation.getStatus().equals(ReservationStatus.APPROVED)) {
-                continue;
-            }
-            if (reservation.getStartDate().isBefore(existingReservation.getEndDate()) && existingReservation.getStartDate().isBefore(reservation.getEndDate())) {
-                return true;
-            }
+    private boolean isReservationConflict(Long roomId, LocalDate startDate, LocalDate endDate) {
+        List<Long> conflictingIds = reservationRepository.findConflictReservationIds(
+                roomId,
+                startDate,
+                endDate,
+                ReservationStatus.APPROVED
+        );
+        if (conflictingIds.isEmpty()) {
+            return false;
         }
-        return false;
+        log.info("Conflict with Room id {}, startDate {}, endDate {}", roomId, startDate, endDate);
+        return true;
     }
 
 
     private Reservation toDomainReservation(ReservationEntity reservationEntity) {
-        return new Reservation(reservationEntity.getId(), reservationEntity.getUserId(), reservationEntity.getRoomId(), reservationEntity.getStartDate(), reservationEntity.getEndDate(), reservationEntity.getStatus());
+        return new Reservation(
+                reservationEntity.getId(),
+                reservationEntity.getUserId(),
+                reservationEntity.getRoomId(),
+                reservationEntity.getStartDate(),
+                reservationEntity.getEndDate(),
+                reservationEntity.getStatus());
     }
 }
